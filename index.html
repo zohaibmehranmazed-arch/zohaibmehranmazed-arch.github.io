@@ -1,1 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catch The Glitch! 🎮</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            font-family: 'Courier New', Courier, monospace;
+        }
 
+        body {
+            background-color: #05050a;
+            color: #00ffcc;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        #ui-layer {
+            text-align: center;
+            margin-bottom: 20px;
+            z-index: 10;
+        }
+
+        h1 {
+            font-size: 2rem;
+            text-shadow: 0 0 10px #00ffcc;
+            margin-bottom: 10px;
+        }
+
+        .stats {
+            font-size: 1.2rem;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 1px solid #00ffcc;
+            display: inline-block;
+        }
+
+        #game-box {
+            position: relative;
+            width: 90vw;
+            height: 60vh;
+            max-width: 600px;
+            max-height: 400px;
+            background: #0f0f1a;
+            border: 3px solid #ff0055;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(255, 0, 85, 0.3);
+            overflow: hidden;
+            cursor: crosshair;
+        }
+
+        #target {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: #ff0055;
+            border-radius: 8px;
+            box-shadow: 0 0 15px #ff0055;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #fff;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: transform 0.1s ease;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        #target:active {
+            transform: scale(0.9);
+        }
+
+        #game-over-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(5, 5, 10, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            display: none;
+        }
+
+        button {
+            background: #00ffcc;
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            font-family: inherit;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 15px;
+            box-shadow: 0 0 10px #00ffcc;
+        }
+
+        button:hover {
+            background: #fff;
+            box-shadow: 0 0 15px #fff;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="ui-layer">
+        <h1>CATCH THE GLITCH</h1>
+        <div class="stats">
+            Score: <span id="score-val">0</span> | Time: <span id="time-val">20</span>s
+        </div>
+    </div>
+
+    <div id="game-box">
+        <div id="target">👾</div>
+
+        <div id="game-over-screen">
+            <h2>GAME OVER</h2>
+            <p style="margin-top: 10px;">Final Score: <span id="final-score">0</span></p>
+            <button onclick="startGame()">PLAY AGAIN</button>
+        </div>
+    </div>
+
+    <script>
+        const target = document.getElementById('target');
+        const gameBox = document.getElementById('game-box');
+        const scoreVal = document.getElementById('score-val');
+        const timeVal = document.getElementById('time-val');
+        const gameOverScreen = document.getElementById('game-over-screen');
+        const finalScore = document.getElementById('final-score');
+
+        let score = 0;
+        let timeLeft = 20;
+        let gameInterval;
+        let isPlaying = false;
+
+        function moveTarget() {
+            if (!isPlaying) return;
+            
+            // Calculate max bounds based on target size (50px)
+            const maxX = gameBox.clientWidth - 50;
+            const maxY = gameBox.clientHeight - 50;
+
+            const randomX = Math.floor(Math.random() * maxX);
+            const randomY = Math.floor(Math.random() * maxY);
+
+            target.style.left = randomX + 'px';
+            target.style.top = randomY + 'px';
+            target.style.transform = 'none'; // reset centered absolute position
+        }
+
+        function startGame() {
+            score = 0;
+            timeLeft = 20;
+            isPlaying = true;
+            scoreVal.textContent = score;
+            timeVal.textContent = timeLeft;
+            gameOverScreen.style.display = 'none';
+            target.style.display = 'flex';
+            
+            moveTarget();
+
+            // Game countdown timer
+            gameInterval = setInterval(() => {
+                timeLeft--;
+                timeVal.textContent = timeLeft;
+
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function endGame() {
+            isPlaying = false;
+            clearInterval(gameInterval);
+            target.style.display = 'none';
+            finalScore.textContent = score;
+            gameOverScreen.style.display = 'flex';
+        }
+
+        // Handle target clicking/tapping
+        target.addEventListener('pointerdown', (e) => {
+            e.stopPropagation(); // prevent box click trigger
+            if (!isPlaying) return;
+            
+            score++;
+            scoreVal.textContent = score;
+            
+            // Flash color quickly on click
+            target.style.background = '#00ffcc';
+            setTimeout(() => {
+                target.style.background = '#ff0055';
+            }, 100);
+
+            moveTarget();
+        });
+
+        // Start the game loop automatically on page load
+        startGame();
+    </script>
+</body>
+</html>
